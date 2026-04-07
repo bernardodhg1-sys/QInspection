@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QC Inspector – Magnetic Knife Holders</title>
+    <!-- ExcelJS for image-embedded Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 18px 20px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+        }
+        .header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+        .header p  { font-size: 0.8rem; opacity: 0.65; margin-top: 3px; }
+
+        /* ── Main ── */
+        .main {
+            padding: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* ── Counter card ── */
+        .counter-card {
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            margin-bottom: 16px;
+        }
+        .counter-number {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: #e63946;
+            line-height: 1;
+        }
+        .counter-label { font-size: 0.88rem; color: #777; margin-top: 5px; }
+
+        /* ── Primary button ── */
+        .btn-register {
+            width: 100%;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(230,57,70,0.42);
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin-bottom: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-register:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(230,57,70,0.3);
+        }
+        .btn-register .plus { font-size: 1.6rem; font-weight: 300; line-height: 1; }
+
+        /* ── Export button ── */
+        .btn-export {
+            width: 100%;
+            background: white;
+            color: #1a7a4a;
+            border: 2px solid #1a7a4a;
+            border-radius: 14px;
+            padding: 14px;
+            font-size: 0.97rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.1s;
+            margin-bottom: 26px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-export:active { background: #e8f5ee; }
+        .btn-export:disabled { opacity: 0.38; cursor: not-allowed; }
+
+        /* ── Units section ── */
+        .section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 14px;
+            padding: 44px 20px;
+            text-align: center;
+            color: #bbb;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .empty-state .ei { font-size: 2.8rem; display: block; margin-bottom: 10px; }
+
+        /* ── Unit card ── */
+        .unit-card {
+            background: white;
+            border-radius: 14px;
+            padding: 13px 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            box-shadow: 0 1px 7px rgba(0,0,0,0.07);
+            animation: slideIn 0.22s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-7px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .unit-thumb {
+            width: 62px; height: 62px;
+            border-radius: 9px;
+            object-fit: cover;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .unit-thumb-ph {
+            width: 62px; height: 62px;
+            border-radius: 9px;
+            background: #f0f2f5;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .unit-info { flex: 1; min-width: 0; }
+        .unit-header-row {
+            display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+            margin-bottom: 3px;
+        }
+        .unit-num  { font-weight: 700; font-size: 1rem; }
+        .defect-badge {
+            background: #fff3cd; color: #856404;
+            padding: 2px 9px; border-radius: 20px;
+            font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+        }
+        .unit-notes {
+            font-size: 0.8rem; color: #666;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .unit-time { font-size: 0.72rem; color: #bbb; margin-top: 1px; }
+        .unit-del {
+            background: none; border: none; color: #ccc;
+            font-size: 1.15rem; cursor: pointer; padding: 5px;
+            flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+        }
+        .unit-del:active { color: #e63946; }
+
+        /* ── Modal overlay ── */
+        .overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.58);
+            z-index: 100;
+            display: flex; align-items: flex-end; justify-content: center;
+            animation: fadeIn 0.18s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal {
+            background: white;
+            border-radius: 26px 26px 0 0;
+            width: 100%;
+            max-width: 700px;
+            max-height: 93vh;
+            overflow-y: auto;
+            padding: 12px 20px 48px;
+            animation: slideUp 0.22s ease;
+            -webkit-overflow-scrolling: touch;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+        }
+        .handle {
+            width: 38px; height: 4px; background: #e0e0e0;
+            border-radius: 2px; margin: 0 auto 18px;
+        }
+        .modal h2 { font-size: 1.18rem; font-weight: 700; text-align: center; margin-bottom: 18px; }
+
+        /* ── Photo area ── */
+        .photo-wrap {
+            position: relative;
+            border: 2px dashed #ddd;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fafafa;
+            margin-bottom: 18px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .photo-wrap img { width: 100%; display: block; max-height: 240px; object-fit: cover; }
+        .photo-change-bar {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.45); color: white;
+            font-size: 0.8rem; font-weight: 600;
+            text-align: center; padding: 7px;
+        }
+
+        /* Photo action buttons when no photo */
+        .photo-btns {
+            display: flex; gap: 10px; margin-bottom: 18px;
+        }
+        .photo-btn {
+            flex: 1; border: 2px solid #e0e0e0;
+            border-radius: 12px; padding: 12px 8px;
+            background: white; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600; color: #444;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            -webkit-tap-highlight-color: transparent; transition: border-color 0.15s;
+        }
+        .photo-btn:active { border-color: #e63946; }
+        .photo-btn .pb-icon { font-size: 1.6rem; }
+
+        /* ── Form ── */
+        .form-group { margin-bottom: 17px; }
+        .form-label {
+            display: block; font-size: 0.78rem; font-weight: 700;
+            color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        .form-sublabel {
+            font-size: 0.72rem; color: #aaa; font-weight: 400;
+            text-transform: none; letter-spacing: 0; margin-left: 5px;
+        }
+        .opt-label { font-weight: 400; text-transform: none; color: #aaa; }
+        .form-input {
+            width: 100%; border: 2px solid #eee; border-radius: 12px;
+            padding: 14px 15px; font-size: 1rem; outline: none;
+            transition: border-color 0.18s; -webkit-appearance: none; font-family: inherit;
+        }
+        .form-input:focus { border-color: #e63946; }
+        textarea.form-input { resize: none; }
+
+        /* ── Defect grid ── */
+        .defect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Last item spans full width when total count is odd */
+        .defect-btn:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+        .defect-btn {
+            border: 2px solid #eee; border-radius: 13px; padding: 16px 10px;
+            background: white; cursor: pointer; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            transition: border-color 0.15s, background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .defect-btn .de { font-size: 2rem; line-height: 1; }
+        .defect-btn .dl { font-size: 0.82rem; font-weight: 600; color: #444; line-height: 1.2; }
+        .defect-btn.sel { border-color: #e63946; background: #fff5f5; }
+        .defect-btn.sel .dl { color: #e63946; }
+        /* Checkmark indicator on selected */
+        .defect-btn.sel::after {
+            content: '✓';
+            position: absolute;
+            top: 6px; right: 8px;
+            font-size: 0.75rem; color: #e63946; font-weight: 700;
+        }
+        .defect-btn { position: relative; }
+
+        .other-field { display: none; margin-top: 10px; }
+        .other-field.vis { display: block; }
+
+        /* ── Modal actions ── */
+        .modal-actions { display: flex; gap: 12px; margin-top: 22px; }
+        .btn-cancel {
+            flex: 1; background: #f0f2f5; color: #555;
+            border: none; border-radius: 13px; padding: 17px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-confirm {
+            flex: 2; background: linear-gradient(135deg, #e63946, #c1121f);
+            color: white; border: none; border-radius: 13px; padding: 17px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(230,57,70,0.35);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-confirm:active { opacity: 0.9; }
+
+        /* ── Photo lightbox ── */
+        .lightbox {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            z-index: 200; display: flex; align-items: center; justify-content: center;
+            cursor: zoom-out;
+        }
+        .lightbox img { max-width: 96vw; max-height: 92vh; border-radius: 8px; }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%) translateY(90px);
+            background: #1a1a2e; color: white;
+            padding: 11px 22px; border-radius: 30px;
+            font-size: 0.88rem; font-weight: 600; z-index: 300;
+            transition: transform 0.28s ease; white-space: nowrap;
+            pointer-events: none;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── Export spinner ── */
+        .btn-export.loading { opacity: 0.65; cursor: wait; }
+
+        /* Hidden inputs */
+        #photoInputCamera, #photoInputGallery { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- ────────────── Header ────────────── -->
+<div class="header">
+    <h1>🔪 QC Inspector</h1>
+    <p>Magnetic Knife Holder — Defect Tracker</p>
+</div>
+
+<!-- ────────────── Main ────────────── -->
+<div class="main">
+
+    <!-- Counter -->
+    <div class="counter-card">
+        <div class="counter-number" id="counterNum">0</div>
+        <div class="counter-label">Defective units registered</div>
+    </div>
+
+    <!-- Register button -->
+    <button class="btn-register" onclick="openModal()">
+        <span class="plus">+</span> Register Defective Unit
+    </button>
+
+    <!-- Export button -->
+    <button class="btn-export" id="exportBtn" onclick="exportExcel()" disabled>
+        📊 Export to Excel (.xlsx)
+    </button>
+
+    <!-- Units list -->
+    <div class="section-title">Registered Units</div>
+    <div id="unitsList">
+        <div class="empty-state">
+            <span class="ei">📋</span>
+            No defective units registered yet.<br>Tap the button above to start.
+        </div>
+    </div>
+
+</div><!-- /main -->
+
+<!-- ────────────── Modal ────────────── -->
+<div class="overlay" id="overlay" style="display:none" onclick="overlayClick(event)">
+    <div class="modal" id="modal">
+        <div class="handle"></div>
+        <h2>Register Defective Unit</h2>
+
+        <!-- Photo -->
+        <div class="photo-wrap" id="photoWrap" onclick="photoWrapClick()" style="display:none">
+            <!-- populated dynamically -->
+        </div>
+
+        <div class="photo-btns" id="photoBtns">
+            <button class="photo-btn" onclick="triggerCamera()">
+                <span class="pb-icon">📷</span>
+                Take Photo
+            </button>
+            <button class="photo-btn" onclick="triggerGallery()">
+                <span class="pb-icon">🖼️</span>
+                Choose from Gallery
+            </button>
+        </div>
+
+        <input type="file" id="photoInputCamera"  accept="image/*" capture="environment" onchange="handlePhoto(event)">
+        <input type="file" id="photoInputGallery" accept="image/*"                       onchange="handlePhoto(event)">
+
+        <!-- Unit number -->
+        <div class="form-group">
+            <label class="form-label" for="unitNumber">Unit Number</label>
+            <input type="number" class="form-input" id="unitNumber" placeholder="e.g. 1" min="1">
+        </div>
+
+        <!-- Defect type — multi-select -->
+        <div class="form-group">
+            <label class="form-label">
+                Defect Type
+                <span class="form-sublabel">— select all that apply</span>
+            </label>
+            <div class="defect-grid">
+                <button class="defect-btn" onclick="toggleDefect('Bent', this)">
+                    <span class="de">🪵</span><span class="dl">Bent</span>
+                </button>
+                <button class="defect-btn" onclick="toggleDefect('Hit / Dented', this)">
+                    <span class="de">💥</span><span class="dl">Hit / Dented</span>
+                </button>
+                <button class="defect-btn" onclick="toggleDefect('Poorly Cut', this)">
+                    <span class="de">✂️</span><span class="dl">Poorly Cut</span>
+                </button>
+                <button class="defect-btn" onclick="toggleDefect('Lacks Polish', this)">
+                    <span class="de">✨</span><span class="dl">Lacks Polish</span>
+                </button>
+                <button class="defect-btn" onclick="toggleDefect('Other', this)">
+                    <span class="de">📝</span><span class="dl">Other</span>
+                </button>
+            </div>
+            <div class="other-field" id="otherField">
+                <input type="text" class="form-input" id="otherText" placeholder="Describe the other defect…">
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+            <label class="form-label" for="notesInput">
+                Notes <span class="opt-label">(optional)</span>
+            </label>
+            <textarea class="form-input" id="notesInput" rows="3" placeholder="Additional observations…"></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+            <button class="btn-cancel"  onclick="closeModal()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmUnit()">✓ Save Unit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ────────────── Script ────────────── -->
+<script>
+/* ─── State ─── */
+let units = [];
+let photoBase64 = null;
+const selDefects = new Set(); // multi-select
+
+/* ─── Persistence ─── */
+function saveToStorage() {
+    try {
+        localStorage.setItem('qc_inspector_units', JSON.stringify(units));
+    } catch (e) {
+        showToast('⚠️ Storage quota reached — data may not persist');
+    }
+}
+
+function loadFromStorage() {
+    try {
+        const raw = localStorage.getItem('qc_inspector_units');
+        if (raw) units = JSON.parse(raw);
+    } catch (e) {
+        units = [];
+    }
+}
+
+/* ─── Modal open / close ─── */
+function openModal() {
+    photoBase64 = null;
+    selDefects.clear();
+    // deselect all defect buttons
+    document.querySelectorAll('.defect-btn').forEach(b => b.classList.remove('sel'));
+
+    document.getElementById('unitNumber').value = units.length + 1;
+    document.getElementById('notesInput').value  = '';
+    document.getElementById('otherText').value   = '';
+    document.getElementById('otherField').classList.remove('vis');
+    document.getElementById('photoInputCamera').value  = '';
+    document.getElementById('photoInputGallery').value = '';
+
+    document.getElementById('photoWrap').style.display  = 'none';
+    document.getElementById('photoBtns').style.display  = 'flex';
+
+    document.getElementById('overlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('overlay').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function overlayClick(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+/* ─── Photo ─── */
+function triggerCamera()  { document.getElementById('photoInputCamera').click(); }
+function triggerGallery() { document.getElementById('photoInputGallery').click(); }
+
+function photoWrapClick() {
+    document.getElementById('photoInputGallery').click();
+}
+
+function handlePhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        photoBase64 = ev.target.result;
+        const wrap = document.getElementById('photoWrap');
+        wrap.innerHTML = `
+            <img src="${photoBase64}" alt="preview">
+            <div class="photo-change-bar">📷 Tap to change photo</div>
+        `;
+        wrap.style.display = 'block';
+        document.getElementById('photoBtns').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+/* ─── Defect multi-select ─── */
+function toggleDefect(type, btn) {
+    if (selDefects.has(type)) {
+        selDefects.delete(type);
+        btn.classList.remove('sel');
+    } else {
+        selDefects.add(type);
+        btn.classList.add('sel');
+    }
+
+    // Show/hide Other text field
+    const f = document.getElementById('otherField');
+    if (selDefects.has('Other')) {
+        f.classList.add('vis');
+        document.getElementById('otherText').focus();
+    } else {
+        f.classList.remove('vis');
+    }
+}
+
+/* ─── Confirm / save ─── */
+function confirmUnit() {
+    const unitNum = document.getElementById('unitNumber').value.trim();
+    if (!unitNum) { showToast('⚠️ Please enter a unit number'); return; }
+    if (selDefects.size === 0) { showToast('⚠️ Please select at least one defect type'); return; }
+
+    // Build defect label
+    const parts = [...selDefects].map(d => {
+        if (d === 'Other') {
+            const ot = document.getElementById('otherText').value.trim();
+            if (!ot) { showToast('⚠️ Please describe the "Other" defect'); return null; }
+            return `Other: ${ot}`;
+        }
+        return d;
+    });
+    if (parts.includes(null)) return; // validation failed inside map
+    const defectLabel = parts.join(' + ');
+
+    const notes = document.getElementById('notesInput').value.trim();
+    const now   = new Date();
+    const pad   = n => String(n).padStart(2, '0');
+    const dtStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} `
+                + `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    units.unshift({
+        id:         now.getTime(),
+        unitNumber: unitNum,
+        defectType: defectLabel,
+        notes,
+        photo:      photoBase64,
+        datetime:   dtStr,
+    });
+
+    saveToStorage();
+    closeModal();
+    renderUnits();
+    showToast('✅ Unit saved');
+}
+
+/* ─── Delete ─── */
+function deleteUnit(id) {
+    if (!confirm('Remove this unit from the list?')) return;
+    units = units.filter(u => u.id !== id);
+    saveToStorage();
+    renderUnits();
+}
+
+/* ─── Render list ─── */
+const EMOJI_MAP = {
+    'Bent': '🪵', 'Hit / Dented': '💥', 'Poorly Cut': '✂️',
+    'Lacks Polish': '✨', 'Other': '📝'
+};
+function defectEmojis(t) {
+    return t.split(' + ').map(part => {
+        for (const k in EMOJI_MAP) if (part.startsWith(k)) return EMOJI_MAP[k];
+        return '📝';
+    }).join('');
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function renderUnits() {
+    document.getElementById('counterNum').textContent = units.length;
+    document.getElementById('exportBtn').disabled = units.length === 0;
+
+    const list = document.getElementById('unitsList');
+    if (!units.length) {
+        list.innerHTML = `<div class="empty-state"><span class="ei">📋</span>No defective units registered yet.<br>Tap the button above to start.</div>`;
+        return;
+    }
+
+    list.innerHTML = units.map(u => `
+        <div class="unit-card">
+            ${u.photo
+                ? `<img class="unit-thumb" src="${u.photo}" alt="Unit ${esc(u.unitNumber)}" onclick="showLightbox(${u.id})">`
+                : `<div class="unit-thumb-ph">📷</div>`}
+            <div class="unit-info">
+                <div class="unit-header-row">
+                    <span class="unit-num">Unit #${esc(u.unitNumber)}</span>
+                    <span class="defect-badge">${defectEmojis(u.defectType)} ${esc(u.defectType)}</span>
+                </div>
+                ${u.notes ? `<div class="unit-notes">${esc(u.notes)}</div>` : ''}
+                <div class="unit-time">🕐 ${u.datetime}</div>
+            </div>
+            <button class="unit-del" onclick="deleteUnit(${u.id})">✕</button>
+        </div>
+    `).join('');
+}
+
+/* ─── Lightbox ─── */
+function showLightbox(id) {
+    const u = units.find(x => x.id === id);
+    if (!u || !u.photo) return;
+    const lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.innerHTML = `<img src="${u.photo}" alt="Unit ${esc(u.unitNumber)}">`;
+    lb.onclick = () => lb.remove();
+    document.body.appendChild(lb);
+}
+
+/* ─── Export with embedded images (ExcelJS) ─── */
+async function exportExcel() {
+    if (!units.length) return;
+    const btn = document.getElementById('exportBtn');
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Generating…';
+
+    try {
+        const wb = new ExcelJS.Workbook();
+        wb.creator = 'QC Inspector';
+        const ws = wb.addWorksheet('QC Inspection');
+
+        const IMG_COL_WIDTH  = 22;   // chars
+        const IMG_ROW_HEIGHT = 90;   // points (~px)
+        const PADDING_ROWS   = 1;
+
+        ws.columns = [
+            { header: 'Unit',        key: 'unit',    width: 10  },
+            { header: 'Defect Type', key: 'defect',  width: 28  },
+            { header: 'Notes',       key: 'notes',   width: 36  },
+            { header: 'Photo',       key: 'photo',   width: IMG_COL_WIDTH },
+            { header: 'Date & Time', key: 'dt',      width: 22  },
+        ];
+
+        // Style header row
+        const hdrRow = ws.getRow(1);
+        hdrRow.height = 22;
+        hdrRow.eachCell(cell => {
+            cell.font      = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1A1A2E' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+
+        const sorted = units.slice().reverse(); // chronological order
+
+        for (let i = 0; i < sorted.length; i++) {
+            const u   = sorted[i];
+            const row = ws.addRow({
+                unit:   u.unitNumber,
+                defect: u.defectType,
+                notes:  u.notes || '',
+                photo:  u.photo ? '' : '(no photo)',
+                dt:     u.datetime,
+            });
+            row.height = IMG_ROW_HEIGHT;
+            row.eachCell({ includeEmpty: true }, cell => {
+                cell.alignment = { vertical: 'middle', wrapText: true };
+            });
+
+            if (u.photo) {
+                // Strip data URL prefix  →  pure base64
+                const commaIdx = u.photo.indexOf(',');
+                const b64      = u.photo.slice(commaIdx + 1);
+                const ext      = u.photo.toLowerCase().includes('png') ? 'png' : 'jpeg';
+
+                const imgId = wb.addImage({ base64: b64, extension: ext });
+
+                // ExcelJS rows/cols are 0-indexed for tl/br
+                const excelRow = 1 + PADDING_ROWS + i; // skip header (row 0)
+                ws.addImage(imgId, {
+                    tl: { col: 3,   row: excelRow },
+                    br: { col: 4,   row: excelRow + 1 },
+                    editAs: 'oneCell',
+                });
+            }
+        }
+
+        // Freeze header
+        ws.views = [{ state: 'frozen', ySplit: 1 }];
+
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob   = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const fn  = `QC_MagneticKnifeHolder_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}.xlsx`;
+
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href     = url;
+        a.download = fn;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('📊 Excel with images downloaded!');
+    } catch (err) {
+        console.error(err);
+        showToast('❌ Export failed — see console');
+    } finally {
+        btn.classList.remove('loading');
+        btn.innerHTML = '📊 Export to Excel (.xlsx)';
+    }
+}
+
+/* ─── Toast ─── */
+let toastTimer;
+function showToast(msg) {
+    clearTimeout(toastTimer);
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ─── Init ─── */
+loadFromStorage();
+renderUnits();
+</script>
+</body>
+</html>
