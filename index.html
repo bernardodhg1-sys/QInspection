@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía Biología II</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2ecc71;
+    --pink: #ff6b9d;
+    --purple: #a855f7;
+    --blue: #3b82f6;
+    --yellow: #fbbf24;
+    --orange: #f97316;
+    --bg: #0f0f1a;
+    --card-bg: #1a1a2e;
+    --card-border: #2a2a4a;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: ‘Nunito’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+background-image:
+radial-gradient(ellipse at 20% 20%, rgba(168,85,247,0.12) 0%, transparent 50%),
+radial-gradient(ellipse at 80% 80%, rgba(46,204,113,0.1) 0%, transparent 50%);
+}
+
+header {
+text-align: center;
+padding: 2.5rem 1rem 1.5rem;
+position: relative;
+}
+
+header h1 {
+font-family: ‘Fredoka One’, cursive;
+font-size: clamp(2rem, 6vw, 3.5rem);
+background: linear-gradient(135deg, var(–green), var(–pink), var(–purple));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+letter-spacing: 1px;
+}
+
+header p {
+color: var(–muted);
+margin-top: 0.4rem;
+font-size: 1rem;
+}
+
+/* TABS */
+.tabs {
+display: flex;
+justify-content: center;
+gap: 0.75rem;
+padding: 0 1rem 2rem;
+flex-wrap: wrap;
+}
+
+.tab-btn {
+font-family: ‘Nunito’, sans-serif;
+font-weight: 800;
+font-size: 1rem;
+padding: 0.6rem 1.6rem;
+border-radius: 50px;
+border: 2px solid var(–card-border);
+background: var(–card-bg);
+color: var(–muted);
+cursor: pointer;
+transition: all 0.25s;
+}
+.tab-btn:hover { border-color: var(–purple); color: var(–text); }
+.tab-btn.active {
+background: linear-gradient(135deg, var(–purple), var(–pink));
+border-color: transparent;
+color: #fff;
+box-shadow: 0 4px 20px rgba(168,85,247,0.4);
+}
+
+.section { display: none; padding: 0 1rem 3rem; max-width: 900px; margin: 0 auto; }
+.section.active { display: block; }
+
+/* TOPIC SELECTOR */
+.topic-tabs {
+display: flex;
+flex-wrap: wrap;
+gap: 0.5rem;
+margin-bottom: 2rem;
+justify-content: center;
+}
+.topic-btn {
+font-family: ‘Nunito’, sans-serif;
+font-weight: 700;
+font-size: 0.85rem;
+padding: 0.4rem 1rem;
+border-radius: 50px;
+border: 2px solid var(–card-border);
+background: transparent;
+color: var(–muted);
+cursor: pointer;
+transition: all 0.2s;
+}
+.topic-btn:hover, .topic-btn.active {
+background: var(–blue);
+border-color: var(–blue);
+color: #fff;
+}
+
+/* FLASHCARDS */
+.flashcard-container {
+perspective: 1200px;
+width: 100%;
+max-width: 560px;
+height: 280px;
+margin: 0 auto 2rem;
+cursor: pointer;
+}
+
+.flashcard-inner {
+width: 100%;
+height: 100%;
+position: relative;
+transform-style: preserve-3d;
+transition: transform 0.55s cubic-bezier(.4,2,.6,1);
+}
+
+.flashcard-inner.flipped { transform: rotateY(180deg); }
+
+.flashcard-face {
+position: absolute;
+inset: 0;
+border-radius: 20px;
+backface-visibility: hidden;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 2rem;
+text-align: center;
+border: 2px solid var(–card-border);
+}
+
+.flashcard-front {
+background: linear-gradient(135deg, #1a1a2e, #16213e);
+}
+.flashcard-front .label {
+font-size: 0.75rem;
+font-weight: 800;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–green);
+margin-bottom: 1rem;
+}
+.flashcard-front .term {
+font-family: ‘Fredoka One’, cursive;
+font-size: clamp(1.6rem, 4vw, 2.2rem);
+color: var(–text);
+line-height: 1.2;
+}
+.flashcard-front .sub {
+font-size: 0.85rem;
+color: var(–pink);
+margin-top: 0.5rem;
+font-weight: 700;
+}
+
+.flashcard-back {
+background: linear-gradient(135deg, #0f2027, #203a43);
+transform: rotateY(180deg);
+border-color: var(–green);
+}
+.flashcard-back .label {
+font-size: 0.75rem;
+font-weight: 800;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–pink);
+margin-bottom: 0.75rem;
+}
+.flashcard-back .definition {
+font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+color: #e0e0ff;
+line-height: 1.6;
+font-weight: 600;
+}
+
+.fc-hint {
+text-align: center;
+color: var(–muted);
+font-size: 0.8rem;
+margin-bottom: 1.2rem;
+}
+
+.fc-nav {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 1.5rem;
+margin-top: 1rem;
+}
+.fc-nav button {
+font-family: ‘Nunito’, sans-serif;
+font-weight: 800;
+font-size: 1.5rem;
+width: 52px;
+height: 52px;
+border-radius: 50%;
+border: 2px solid var(–card-border);
+background: var(–card-bg);
+color: var(–text);
+cursor: pointer;
+transition: all 0.2s;
+}
+.fc-nav button:hover {
+border-color: var(–purple);
+background: rgba(168,85,247,0.2);
+}
+.fc-counter {
+font-weight: 700;
+color: var(–muted);
+font-size: 1rem;
+min-width: 80px;
+text-align: center;
+}
+
+.progress-bar {
+height: 6px;
+background: var(–card-border);
+border-radius: 99px;
+margin-bottom: 2rem;
+overflow: hidden;
+}
+.progress-fill {
+height: 100%;
+background: linear-gradient(90deg, var(–green), var(–blue));
+border-radius: 99px;
+transition: width 0.4s ease;
+}
+
+/* QUIZ */
+.quiz-question {
+background: var(–card-bg);
+border: 2px solid var(–card-border);
+border-radius: 20px;
+padding: 2rem;
+margin-bottom: 1.5rem;
+}
+.quiz-question .q-num {
+font-size: 0.75rem;
+font-weight: 800;
+letter-spacing: 2px;
+color: var(–yellow);
+text-transform: uppercase;
+margin-bottom: 0.75rem;
+}
+.quiz-question .q-text {
+font-size: 1.1rem;
+font-weight: 700;
+color: var(–text);
+line-height: 1.5;
+margin-bottom: 1.5rem;
+}
+
+.options { display: grid; gap: 0.6rem; }
+.option-btn {
+font-family: ‘Nunito’, sans-serif;
+font-weight: 700;
+font-size: 0.95rem;
+padding: 0.8rem 1.2rem;
+border-radius: 12px;
+border: 2px solid var(–card-border);
+background: rgba(255,255,255,0.03);
+color: var(–text);
+cursor: pointer;
+text-align: left;
+transition: all 0.2s;
+}
+.option-btn:hover:not(:disabled) {
+border-color: var(–purple);
+background: rgba(168,85,247,0.1);
+}
+.option-btn.correct { border-color: var(–green); background: rgba(46,204,113,0.15); color: var(–green); }
+.option-btn.wrong { border-color: var(–pink); background: rgba(255,107,157,0.15); color: var(–pink); }
+.option-btn:disabled { cursor: default; }
+
+.quiz-feedback {
+display: none;
+padding: 0.8rem 1.2rem;
+border-radius: 12px;
+font-weight: 700;
+margin-top: 0.8rem;
+font-size: 0.95rem;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.correct-fb { background: rgba(46,204,113,0.15); color: var(–green); border: 1px solid var(–green); }
+.quiz-feedback.wrong-fb { background: rgba(255,107,157,0.15); color: var(–pink); border: 1px solid var(–pink); }
+
+.quiz-controls {
+display: flex;
+gap: 1rem;
+justify-content: center;
+margin: 2rem 0 1rem;
+flex-wrap: wrap;
+}
+.btn-primary {
+font-family: ‘Nunito’, sans-serif;
+font-weight: 800;
+font-size: 1rem;
+padding: 0.8rem 2rem;
+border-radius: 50px;
+border: none;
+background: linear-gradient(135deg, var(–purple), var(–pink));
+color: #fff;
+cursor: pointer;
+transition: all 0.2s;
+box-shadow: 0 4px 15px rgba(168,85,247,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168,85,247,0.45); }
+
+.score-display {
+text-align: center;
+background: var(–card-bg);
+border: 2px solid var(–card-border);
+border-radius: 20px;
+padding: 2rem;
+margin-bottom: 2rem;
+}
+.score-display .score-num {
+font-family: ‘Fredoka One’, cursive;
+font-size: 4rem;
+background: linear-gradient(135deg, var(–green), var(–blue));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+.score-display p { color: var(–muted); font-weight: 700; font-size: 1rem; }
+
+@media (max-width: 500px) {
+.flashcard-container { height: 240px; }
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <h1>🧬 Guía Biología II</h1>
+  <p>Sistema Endócrino &amp; Sistema Nervioso</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('flashcards')">🃏 Flashcards</button>
+  <button class="tab-btn" onclick="showTab('quiz')">📝 Cuestionario</button>
+</div>
+
+<!-- ===== FLASHCARDS ===== -->
+
+<div class="section active" id="flashcards">
+  <div class="topic-tabs" id="fc-topics"></div>
+  <div class="progress-bar"><div class="progress-fill" id="fc-progress"></div></div>
+  <p class="fc-hint">Haz clic en la tarjeta para ver la definición ✨</p>
+  <div class="flashcard-container" onclick="flipCard()" id="fc-wrapper">
+    <div class="flashcard-inner" id="fc-inner">
+      <div class="flashcard-face flashcard-front">
+        <div class="label" id="fc-label">Hormona</div>
+        <div class="term" id="fc-term">Cargando…</div>
+        <div class="sub" id="fc-sub"></div>
+      </div>
+      <div class="flashcard-face flashcard-back">
+        <div class="label">Función / Definición</div>
+        <div class="definition" id="fc-def"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button onclick="prevCard()">‹</button>
+    <span class="fc-counter" id="fc-counter">1 / 1</span>
+    <button onclick="nextCard()">›</button>
+  </div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+
+<div class="section" id="quiz">
+  <div class="topic-tabs" id="qz-topics"></div>
+  <div id="quiz-score-area"></div>
+  <div id="quiz-area"></div>
+  <div class="quiz-controls">
+    <button class="btn-primary" onclick="startQuiz()">🔄 Nuevo Cuestionario</button>
+  </div>
+</div>
+
+<script>
+const data = {
+  "Sistema Endócrino – Hormonas": [
+    { term:"Oxitocina", sub:"Hipotálamo", def:"Produce contracciones uterinas durante el parto y estimula la secreción de leche materna." },
+    { term:"Endorfinas", sub:"Glándula Pineal", def:"Disminuyen la ansiedad, causan analgesia, producen efectos sedantes y sensación de bienestar." },
+    { term:"Melatonina", sub:"Glándula Pineal", def:"Estimula el sistema inmunitario, regula el sueño y trata afecciones psiquiátricas." },
+    { term:"Tiroxina", sub:"Tiroides", def:"Controla la oxidación de carbohidratos, grasas y proteínas; regula el ritmo metabólico y el crecimiento." },
+    { term:"Calcitonina", sub:"Tiroides", def:"Limita la liberación de calcio de los huesos hacia el torrente sanguíneo." },
+    { term:"Insulina", sub:"Páncreas", def:"Reduce los niveles de glucosa en sangre promoviendo su ingreso a la célula y transformación en glucógeno para almacenarse en el hígado." },
+    { term:"Glucagón", sub:"Páncreas", def:"Transforma el glucógeno hepático en glucosa, aumentando los niveles de azúcar en sangre." },
+    { term:"Adrenalina (Epinefrina)", sub:"Suprarrenales", def:"Remite al organismo ante situaciones de emergencia, incrementa el ritmo metabólico, eleva ritmo cardíaco y presión sanguínea." },
+    { term:"Mineralocorticoides (Aldosterona)", sub:"Suprarrenales", def:"Regulan los electrolitos como sodio, potasio, cloruros; intervienen en el equilibrio hídrico y la presión arterial." },
+    { term:"Glucocorticoides (Cortisol)", sub:"Suprarrenales", def:"Ayuda al metabolismo y al de los gliceos; mantiene el nivel de glucosa en la sangre; maneja el estrés." },
+    { term:"Estrógenos", sub:"Ovarios", def:"Determinan características sexuales femeninas, mantienen el endometrio durante el embarazo, causan sangrado cuando se acaban." },
+    { term:"Testosterona", sub:"Testículos", def:"Determina características sexuales masculinas, producción de espermatozoides." },
+  ],
+  "Trastornos del Sistema Endócrino": [
+    { term:"Enanismo", sub:"Hipofunción GH", def:"Secreción insuficiente de la hormona del crecimiento (GH); se presenta cuando no hay GH." },
+    { term:"Gigantismo", sub:"Hiperfunción GH", def:"Hipersecreción de la hormona del crecimiento (GH)." },
+    { term:"Diabetes tipo 1", sub:"Páncreas", def:"Deficiencia absoluta de insulina (genética/autoinmune)." },
+    { term:"Diabetes tipo 2", sub:"Páncreas", def:"Resistencia a la insulina, el estilo de vida afecta directamente; la obesidad, el uso de medicamentos, etc., influyen." },
+    { term:"Hipertiroidismo", sub:"Tiroides", def:"Exceso de la hormona tiroidea; síntomas: palpitaciones, ansiedad, irritabilidad, insomnio, adelgazamiento." },
+    { term:"Hipotiroidismo", sub:"Tiroides", def:"Deficiencia de hormonas tiroideas; síntomas: cansancio, frío, ritmo bajo." },
+    { term:"Enfermedad de Cushing", sub:"Suprarrenales", def:"Las glándulas renales producen hipertensión de estas glándulas, originando la Enfermedad de Cushing." },
+  ],
+  "Sistema Nervioso – Células": [
+    { term:"Neurona", sub:"Célula nerviosa", def:"Célula especializada que transmite señales eléctricas y químicas." },
+    { term:"Células de Schwann", sub:"Nervios", def:"Vaina de mielina periférica que aísla, sostiene, nutre y mantiene el sistema nervioso." },
+    { term:"Dendritas", sub:"Parte de la neurona", def:"Prolongaciones cortas que reciben información." },
+    { term:"Axón", sub:"Parte de la neurona", def:"Prolongación larga que transmite impulsos nerviosos y conduce señales eléctricas." },
+    { term:"Cuerpo celular (Soma)", sub:"Parte de la neurona", def:"Procesa información y coordina las funciones de la neurona." },
+    { term:"Terminales sinápticas", sub:"Parte de la neurona", def:"Envían señales a otras neuronas formando sinapsis." },
+  ],
+  "Sistema Nervioso – Clasificación": [
+    { term:"Sistema Nervioso Central (SNC)", sub:"Encéfalo + Médula espinal", def:"Recibe y procesa información, toma acciones e inicia respuestas." },
+    { term:"Sistema Nervioso Periférico (SNP)", sub:"Nervios", def:"Controla respuestas motoras; usa los nervios para transportar impulsos, detectar y responder a estímulos internos y externos." },
+    { term:"Cerebro", sub:"SNC", def:"Recibe y procesa información sensorial, inicia respuestas, almacena recuerdos y genera pensamientos y emociones." },
+    { term:"Médula espinal", sub:"SNC", def:"Conduce señales desde el cerebro al cuerpo." },
+    { term:"Sinapsis", sub:"Comunicación neuronal", def:"Contacto entre neuronas; se llama sistema sináptico (dendritos)." },
+    { term:"Neurotransmisores", sub:"Sinapsis", def:"Mensajeros químicos que transmiten información: son sintetizados por las neuronas, liberados en las vesículas sinápticas, incluyen dopamina y noradrenalina." },
+    { term:"Receptores", sub:"SNP", def:"Tejidos especializados capaces de responder a un estímulo a través de la terminación nerviosa." },
+    { term:"Exteroceptores", sub:"SNP", def:"Responden a estímulos externos: luz, sonido, olores." },
+    { term:"Interoceptores", sub:"SNP", def:"Captan cambios en el interior del cuerpo." },
+    { term:"Propioceptores", sub:"SNP", def:"Captan estímulos del aparato locomotor: vestibulares, musculares, articulares." },
+    { term:"Termorreceptores", sub:"SNP", def:"Detectan cambios de temperatura." },
+    { term:"Fotorreceptores", sub:"SNP", def:"Captan estímulos de luz." },
+    { term:"Quimiorreceptores", sub:"SNP", def:"Responden a estímulos químicos (gusto, olfato)." },
+    { term:"Respuesta a estímulos", sub:"Sistema nervioso", def:"Actos reflejos involuntarios, condicionados y por experiencias; actos voluntarios conscientes." },
+  ],
+};
+
+const topics = Object.keys(data);
+let fcTopic = topics[0];
+let fcIndex = 0;
+let fcFlipped = false;
+
+let quizTopic = topics[0];
+let quizQuestions = [];
+let quizAnswers = [];
+let quizScore = 0;
+let quizDone = false;
+
+function buildTopicBtns(containerId, activeTopic, onClickFn) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  topics.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'topic-btn' + (t === activeTopic ? ' active' : '');
+    b.textContent = t;
+    b.onclick = () => onClickFn(t);
+    c.appendChild(b);
+  });
+}
+
+function updateFC() {
+  const cards = data[fcTopic];
+  const card = cards[fcIndex];
+  document.getElementById('fc-inner').classList.remove('flipped');
+  fcFlipped = false;
+  setTimeout(() => {
+    document.getElementById('fc-label').textContent = fcTopic.includes('Trastorno') ? 'Trastorno' : fcTopic.includes('Nervioso') ? 'Concepto' : 'Hormona';
+    document.getElementById('fc-term').textContent = card.term;
+    document.getElementById('fc-sub').textContent = card.sub;
+    document.getElementById('fc-def').textContent = card.def;
+    document.getElementById('fc-counter').textContent = `${fcIndex+1} / ${cards.length}`;
+    const pct = ((fcIndex+1)/cards.length)*100;
+    document.getElementById('fc-progress').style.width = pct+'%';
+  }, fcFlipped ? 280 : 0);
+}
+
+function flipCard() {
+  fcFlipped = !fcFlipped;
+  document.getElementById('fc-inner').classList.toggle('flipped', fcFlipped);
+}
+function nextCard() {
+  const cards = data[fcTopic];
+  fcIndex = (fcIndex+1) % cards.length;
+  updateFC();
+}
+function prevCard() {
+  const cards = data[fcTopic];
+  fcIndex = (fcIndex - 1 + cards.length) % cards.length;
+  updateFC();
+}
+
+function setFCTopic(t) {
+  fcTopic = t;
+  fcIndex = 0;
+  buildTopicBtns('fc-topics', fcTopic, setFCTopic);
+  updateFC();
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'quiz' && quizQuestions.length === 0) startQuiz();
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random()-0.5); }
+
+function startQuiz() {
+  quizAnswers = [];
+  quizScore = 0;
+  quizDone = false;
+  document.getElementById('quiz-score-area').innerHTML = '';
+
+  // Build 10 questions from selected topic
+  const pool = data[quizTopic];
+  const shuffled = shuffle(pool).slice(0, Math.min(10, pool.length));
+  quizQuestions = shuffled.map((card, i) => {
+    const wrongPool = pool.filter(c => c.term !== card.term);
+    const wrongs = shuffle(wrongPool).slice(0,3).map(c => c.def);
+    const options = shuffle([card.def, ...wrongs]);
+    return { q: `¿Cuál es la función/definición de "${card.term}" (${card.sub})?`, correct: card.def, options };
+  });
+
+  buildTopicBtns('qz-topics', quizTopic, (t) => { quizTopic = t; buildTopicBtns('qz-topics', quizTopic, ()=>{}); startQuiz(); });
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const area = document.getElementById('quiz-area');
+  area.innerHTML = '';
+  quizQuestions.forEach((q, qi) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-question';
+    div.innerHTML = `
+      <div class="q-num">Pregunta ${qi+1} de ${quizQuestions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts-${qi}">
+        ${q.options.map((opt,oi) => `<button class="option-btn" onclick="answerQ(${qi},${oi})">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="fb-${qi}"></div>
+    `;
+    area.appendChild(div);
+  });
+  // Submit button at end
+  const sub = document.createElement('div');
+  sub.style.textAlign='center';
+  sub.style.marginTop='1rem';
+  sub.innerHTML = `<button class="btn-primary" onclick="submitQuiz()">Ver Resultado ✨</button>`;
+  area.appendChild(sub);
+}
+
+function answerQ(qi, oi) {
+  const q = quizQuestions[qi];
+  const opts = document.querySelectorAll(`#opts-${qi} .option-btn`);
+  const chosen = opts[oi].textContent;
+  opts.forEach(b => b.disabled = true);
+  const fb = document.getElementById(`fb-${qi}`);
+
+  if (chosen === q.correct) {
+    opts[oi].classList.add('correct');
+    fb.textContent = '✅ ¡Correcto!';
+    fb.className = 'quiz-feedback show correct-fb';
+    quizAnswers[qi] = true;
+  } else {
+    opts[oi].classList.add('wrong');
+    fb.textContent = `❌ Incorrecto. La respuesta es: "${q.correct}"`;
+    fb.className = 'quiz-feedback show wrong-fb';
+    opts.forEach(b => { if(b.textContent === q.correct) b.classList.add('correct'); });
+    quizAnswers[qi] = false;
+  }
+}
+
+function submitQuiz() {
+  if (quizDone) return;
+  quizDone = true;
+  // Force remaining unanswered
+  quizQuestions.forEach((q, qi) => {
+    if (quizAnswers[qi] === undefined) {
+      const opts = document.querySelectorAll(`#opts-${qi} .option-btn`);
+      opts.forEach(b => { b.disabled = true; if(b.textContent === q.correct) b.classList.add('correct'); });
+      quizAnswers[qi] = false;
+    }
+  });
+  const score = quizAnswers.filter(Boolean).length;
+  const pct = Math.round((score/quizQuestions.length)*100);
+  const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '📚';
+  document.getElementById('quiz-score-area').innerHTML = `
+    <div class="score-display">
+      <div class="score-num">${score}/${quizQuestions.length}</div>
+      <p>${emoji} ${pct}% de aciertos</p>
+      <p style="color:var(--muted);margin-top:.4rem;font-size:.9rem">${pct>=80?'¡Excelente trabajo!':pct>=60?'¡Buen esfuerzo, sigue repasando!':'¡Repasa las flashcards e intenta de nuevo!'}</p>
+    </div>
+  `;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Init
+buildTopicBtns('fc-topics', fcTopic, setFCTopic);
+updateFC();
+buildTopicBtns('qz-topics', quizTopic, (t) => { quizTopic = t; buildTopicBtns('qz-topics', quizTopic, ()=>{}); });
+</script>
+
+</body>
+</html>
